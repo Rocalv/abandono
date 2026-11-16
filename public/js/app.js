@@ -114,10 +114,12 @@
         setOk($('me-random-ok'), mine.predRandom === real);
         setOk($('me-dummy-ok'), mine.predDummy === real);
       }
+      var dummyWord = results.dummyValue ? 'abandona' : 'no abandona';
+      $('me-dummy-name').textContent = 'Modelo que siempre dice “' + dummyWord + '”';
       var c = results.counts;
       $('mini-counts').textContent = c.yes + ' abandonaron · ' + c.no + ' no abandonaron';
       $('mini-recall').textContent = c.yes
-        ? 'El azar detectó a ' + results.random.tp + ' de ' + c.yes + '. El que siempre dice “no”, a ninguno.'
+        ? 'El azar detectó a ' + results.random.tp + ' de ' + c.yes + '. El que siempre dice “' + dummyWord + '”, a ' + results.dummy.tp + '.'
         : 'Nadie abandonó: no había a quién detectar.';
       show('result');
     }
@@ -194,10 +196,9 @@
       renderMatrix($('cm-dummy'), r.dummy);
       renderMetrics($('mt-random'), r.random, c);
       renderMetrics($('mt-dummy'), r.dummy, c);
-      var sim = r.simulation;
-      $('sim-random').textContent = 'Promedio de ' + sim.runs.toLocaleString('es-AR') +
-        ' tiradas con estas mismas respuestas: recall ' + pct(sim.recall) +
-        ' · precision ' + pct(sim.precision) + ' · accuracy ' + pct(sim.accuracy) + '.';
+      var dummyWord = r.dummyValue ? 'abandona' : 'no abandona';
+      $('dummy-title').textContent = 'Siempre “' + dummyWord + '”';
+      $('dummy-th').textContent = 'Siempre “' + dummyWord + '” predijo';
       renderDetail(detail);
     }
 
