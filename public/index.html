@@ -49,9 +49,14 @@
           <p id="me-random-ok" class="me-model__ok"></p>
         </div>
         <div class="me-model">
-          <p id="me-dummy-name" class="me-model__name">Modelo que siempre dice “no abandona”</p>
+          <p class="me-model__name">Siempre dice “no abandona”</p>
           <p id="me-dummy" class="me-model__pred"></p>
           <p id="me-dummy-ok" class="me-model__ok"></p>
+        </div>
+        <div class="me-model">
+          <p class="me-model__name">Siempre dice “abandona”</p>
+          <p id="me-always" class="me-model__pred"></p>
+          <p id="me-always-ok" class="me-model__ok"></p>
         </div>
       </div>
       <p id="me-none" class="muted-dark" hidden>No llegaste a responder antes del cierre.</p>
@@ -89,10 +94,11 @@
         <p id="live-answered" class="live__big">0</p>
         <p class="live__label">respuestas</p>
         <p id="live-joined" class="live__sub"></p>
-        <p class="live__hint">Cuando cerremos la votación, dos modelos van a “predecir” quién abandonó, sin mirar ningún dato:</p>
+        <p class="live__hint">Cuando cerremos la votación, tres modelos van a “predecir” quién abandonó, sin mirar ningún dato:</p>
         <ul class="live__models">
-          <li><b>Al azar:</b> dice “abandona” al <span data-rate></span> de la sala, la tasa de abandono de OULAD.</li>
-          <li><b>Siempre lo mismo:</b> toma la opción que más se votó y la aplica a todos los casos.</li>
+          <li><b>Al azar:</b> dice “abandona” al <span data-rate></span> de la sala.</li>
+          <li><b>Siempre “no abandona”:</b> le dice a todos que no abandonan.</li>
+          <li><b>Siempre “abandona”:</b> le dice a todos que abandonan.</li>
         </ul>
         <button id="btn-close" type="button" class="btn btn--orange btn--xl">CERRAR Y PREDECIR</button>
       </div>
@@ -117,11 +123,19 @@
         </article>
         <article class="model">
           <header class="model__head">
-            <h2 id="dummy-title">Siempre “no abandona”</h2>
-            <p>Le dice a todos lo que respondió la mayoría de la sala</p>
+            <h2>Siempre “no abandona”</h2>
+            <p>No mira nada: le dice a todos que no abandonan</p>
           </header>
           <div id="cm-dummy" class="cm"></div>
           <dl id="mt-dummy" class="metrics"></dl>
+        </article>
+        <article class="model">
+          <header class="model__head">
+            <h2>Siempre “abandona”</h2>
+            <p>No mira nada: le dice a todos que abandonan</p>
+          </header>
+          <div id="cm-always" class="cm"></div>
+          <dl id="mt-always" class="metrics"></dl>
         </article>
       </div>
 
@@ -132,7 +146,7 @@
       </div>
 
       <table id="detail" class="detail" hidden>
-        <thead><tr><th>#</th><th>Respondió</th><th>Azar predijo</th><th id="dummy-th">Siempre “no abandona” predijo</th></tr></thead>
+        <thead><tr><th>#</th><th>Respondió</th><th>Azar</th><th>Siempre “no abandona”</th><th>Siempre “abandona”</th></tr></thead>
         <tbody id="detail-body"></tbody>
       </table>
     </div>
