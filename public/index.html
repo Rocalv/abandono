@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#15202E">
+  <title>¿Se puede anticipar? · OULAD</title>
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body data-view="loading">
+
+  <!-- 0. Conectando -->
+  <section id="view-loading" class="view view--dark">
+    <span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>
+    <p class="muted">Conectando…</p>
+  </section>
+
+  <!-- 1. Pregunta (participante) -->
+  <section id="view-vote" class="view view--dark">
+    <p class="kicker">Respuesta anónima</p>
+    <h1 class="question" data-question></h1>
+    <div class="vote-buttons">
+      <button type="button" class="vote vote--yes" data-answer="si">Sí</button>
+      <button type="button" class="vote vote--no" data-answer="no">No</button>
+    </div>
+    <p id="vote-error" class="form-error" role="alert"></p>
+    <p class="muted small">No pedimos tu nombre: nadie va a ver qué respondiste.</p>
+  </section>
+
+  <!-- 2. Ya respondió, espera los resultados (participante) -->
+  <section id="view-wait" class="view view--dark">
+    <p class="kicker">Listo</p>
+    <p class="muted">Tu respuesta</p>
+    <p id="wait-answer" class="answer-chip"></p>
+    <span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>
+    <h2 class="subtitle">Esperando los resultados…</h2>
+    <button id="btn-change" type="button" class="link-btn">Cambiar mi respuesta</button>
+  </section>
+
+  <!-- 3. Resultados (participante) -->
+  <section id="view-result" class="view view--light">
+    <div class="result-wrap">
+      <p class="kicker kicker--orange">Tu resultado</p>
+      <p id="me-answer" class="me-answer"></p>
+      <div class="me-models">
+        <div class="me-model">
+          <p class="me-model__name">Modelo al azar</p>
+          <p id="me-random" class="me-model__pred"></p>
+          <p id="me-random-ok" class="me-model__ok"></p>
+        </div>
+        <div class="me-model">
+          <p class="me-model__name">Modelo que siempre dice “no”</p>
+          <p id="me-dummy" class="me-model__pred"></p>
+          <p id="me-dummy-ok" class="me-model__ok"></p>
+        </div>
+      </div>
+      <p id="me-none" class="muted-dark" hidden>No llegaste a responder antes del cierre.</p>
+      <div class="mini-summary">
+        <p class="mini-summary__title">En la sala</p>
+        <p id="mini-counts" class="mini-summary__counts"></p>
+        <p id="mini-recall" class="mini-summary__text"></p>
+      </div>
+      <p class="muted-dark small">Mirá la pantalla para ver la matriz de confusión.</p>
+    </div>
+  </section>
+
+  <!-- 4. Panel del docente (/admin) -->
+  <section id="view-admin" class="view view--admin" data-phase="open">
+    <header class="admin-bar">
+      <p class="admin-bar__kicker">Juego · ¿Se puede anticipar quién abandona?</p>
+      <h1 class="admin-bar__q" data-question></h1>
+    </header>
+
+    <form id="admin-auth" class="card card--auth" hidden>
+      <label for="admin-key">Clave del panel</label>
+      <input id="admin-key" type="password" autocomplete="current-password" placeholder="La que muestra la consola del servidor">
+      <button type="submit" class="btn btn--orange">Entrar al panel</button>
+      <p id="admin-auth-error" class="form-error" role="alert"></p>
+    </form>
+
+    <!-- Votación abierta -->
+    <div class="admin-open only-open">
+      <aside class="join-panel">
+        <p class="join-panel__label">Escaneá y respondé</p>
+        <div id="join-qr" class="qr"></div>
+        <a id="join-url" class="join-url" target="_blank" rel="noopener"></a>
+      </aside>
+      <div class="live">
+        <p id="live-answered" class="live__big">0</p>
+        <p class="live__label">respuestas</p>
+        <p id="live-joined" class="live__sub"></p>
+        <p class="live__hint">Cuando cerremos la votación, dos modelos van a “predecir” quién abandonó, sin mirar ningún dato:</p>
+        <ul class="live__models">
+          <li><b>Al azar:</b> dice “abandona” al <span data-rate></span> de la sala, la tasa de abandono de OULAD.</li>
+          <li><b>Siempre “no”:</b> dice que nadie abandona.</li>
+        </ul>
+        <button id="btn-close" type="button" class="btn btn--orange btn--xl">CERRAR Y PREDECIR</button>
+      </div>
+    </div>
+
+    <!-- Resultados -->
+    <div class="admin-results only-results">
+      <div class="totals">
+        <div class="total total--yes"><span id="tot-yes" class="total__n"></span><span class="total__label">abandonaron</span></div>
+        <div class="total total--no"><span id="tot-no" class="total__n"></span><span class="total__label">no abandonaron</span></div>
+        <div class="total total--rate"><span id="tot-rate" class="total__n"></span><span class="total__label">tasa de la sala<br>(OULAD: <span data-rate></span>)</span></div>
+      </div>
+
+      <div class="models">
+        <article class="model">
+          <header class="model__head">
+            <h2>Modelo al azar</h2>
+            <p>Dice “abandona” al <span data-rate></span><span id="draw-label"></span></p>
+          </header>
+          <div id="cm-random" class="cm"></div>
+          <dl id="mt-random" class="metrics"></dl>
+          <p id="sim-random" class="sim"></p>
+        </article>
+        <article class="model">
+          <header class="model__head">
+            <h2>Siempre “no abandona”</h2>
+            <p>El Dummy: no mira nada y dice que nadie abandona</p>
+          </header>
+          <div id="cm-dummy" class="cm"></div>
+          <dl id="mt-dummy" class="metrics"></dl>
+          <p class="sim">Siempre da lo mismo: no detecta a nadie.</p>
+        </article>
+      </div>
+
+      <p class="takeaway">Sin datos, ningún modelo supera al azar. El nuestro, con 10 semanas de datos, detecta 7 de cada 10.</p>
+
+      <div class="admin-actions">
+        <button id="btn-reroll" type="button" class="btn btn--ghost">Volver a tirar el azar</button>
+        <button id="btn-detail" type="button" class="btn btn--ghost" aria-expanded="false">Ver detalle anónimo</button>
+        <button id="btn-reset" type="button" class="btn btn--ghost">Nueva votación</button>
+      </div>
+
+      <table id="detail" class="detail" hidden>
+        <thead><tr><th>#</th><th>Respondió</th><th>Azar predijo</th><th>Siempre “no” predijo</th></tr></thead>
+        <tbody id="detail-body"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/js/app.js"></script>
+</body>
+</html>
