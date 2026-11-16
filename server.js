@@ -37,7 +37,6 @@ const PUBLIC_URL = (process.env.PUBLIC_URL || '').replace(/\/+$/, '');
 // Tasa de abandono de OULAD (diapositiva 5): 10.156 de 32.593 inscripciones.
 const BASE_RATE = Number(process.env.BASE_RATE) || 0.312;
 const QUESTION = process.env.QUESTION || '¿Abandonaste alguna materia en 2025?';
-const SIMULATIONS = 1000;
 
 const MAX_PARTICIPANTS = 300;
 const ID_PATTERN = /^[A-Za-z0-9-]{8,64}$/;
@@ -93,22 +92,6 @@ function evaluate(y, yhat) {
   };
 }
 
-function mean(values) {
-  const v = values.filter((x) => x != null);
-  return v.length ? v.reduce((a, b) => a + b, 0) / v.length : null;
-}
-
-// Promedio de muchas tiradas del modelo al azar con las mismas respuestas:
-// muestra lo que pasa "en promedio", más allá de la suerte de una sola tirada.
-function simulateRandom(y) {
-  const acc = [], rec = [], pre = [];
-  for (let k = 0; k < SIMULATIONS; k++) {
-    const m = evaluate(y, y.map(() => rand() < BASE_RATE));
-    acc.push(m.accuracy); rec.push(m.recall); pre.push(m.precision);
-  }
-  return { runs: SIMULATIONS, accuracy: mean(acc), recall: mean(rec), precision: mean(pre) };
-}
-
 function answered() {
   return [...game.participants.values()].filter((p) => p.answer != null);
 }
@@ -123,17 +106,21 @@ function counts() {
 }
 
 // Asigna las predicciones de los dos modelos y calcula los resultados.
+// El modelo de la mayoría le dice a todos lo que respondió la mayoría de la sala
+// (si hay empate, "no abandona").
 function predict() {
   const list = answered().sort((a, b) => a.number - b.number);
   for (const p of game.participants.values()) {
     p.predRandom = null;
     p.predDummy = null;
   }
+  const y = list.map((p) => p.answer === 'si');
+  const yes = y.filter(Boolean).length;
+  const dummyValue = yes > y.length - yes;   // true = "abandona"
   for (const p of list) {
     p.predRandom = rand() < BASE_RATE;  // true = predice "abandona"
-    p.predDummy = false;                // siempre "no abandona"
+    p.predDummy = dummyValue;
   }
-  const y = list.map((p) => p.answer === 'si');
   game.draw += 1;
   game.results = {
     round: game.round,
@@ -141,9 +128,9 @@ function predict() {
     baseRate: BASE_RATE,
     question: QUESTION,
     counts: counts(),
+    dummyValue,
     random: evaluate(y, list.map((p) => p.predRandom)),
-    dummy: evaluate(y, list.map((p) => p.predDummy)),
-    simulation: simulateRandom(y)
+    dummy: evaluate(y, list.map((p) => p.predDummy))
   };
 }
 
@@ -338,7 +325,7 @@ io.on('connection', (socket) => {
 });
 
 // Exporta las funciones de cálculo para poder probarlas sin levantar el servidor.
-module.exports = { evaluate, simulateRandom };
+module.exports = { evaluate };
 
 if (require.main === module) {
   server.listen(PORT, () => {
