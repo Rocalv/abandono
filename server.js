@@ -105,22 +105,23 @@ function counts() {
   return { answered: list.length, pending, yes, no: list.length - yes };
 }
 
-// Asigna las predicciones de los dos modelos y calcula los resultados.
-// El modelo de la mayoría le dice a todos lo que respondió la mayoría de la sala
-// (si hay empate, "no abandona").
+// Asigna las predicciones de los tres modelos y calcula los resultados.
+//   predRandom: "abandona" con probabilidad BASE_RATE
+//   predDummy:  siempre "no abandona"
+//   predAlways: siempre "abandona"
 function predict() {
   const list = answered().sort((a, b) => a.number - b.number);
   for (const p of game.participants.values()) {
     p.predRandom = null;
     p.predDummy = null;
+    p.predAlways = null;
+  }
+  for (const p of list) {
+    p.predRandom = rand() < BASE_RATE;
+    p.predDummy = false;
+    p.predAlways = true;
   }
   const y = list.map((p) => p.answer === 'si');
-  const yes = y.filter(Boolean).length;
-  const dummyValue = yes > y.length - yes;   // true = "abandona"
-  for (const p of list) {
-    p.predRandom = rand() < BASE_RATE;  // true = predice "abandona"
-    p.predDummy = dummyValue;
-  }
   game.draw += 1;
   game.results = {
     round: game.round,
@@ -128,15 +129,15 @@ function predict() {
     baseRate: BASE_RATE,
     question: QUESTION,
     counts: counts(),
-    dummyValue,
     random: evaluate(y, list.map((p) => p.predRandom)),
-    dummy: evaluate(y, list.map((p) => p.predDummy))
+    dummy: evaluate(y, list.map((p) => p.predDummy)),
+    always: evaluate(y, list.map((p) => p.predAlways))
   };
 }
 
 function mine(p) {
   if (!game.results || p.answer == null) return null;
-  return { answer: p.answer, predRandom: p.predRandom, predDummy: p.predDummy, number: p.number };
+  return { answer: p.answer, predRandom: p.predRandom, predDummy: p.predDummy, predAlways: p.predAlways, number: p.number };
 }
 
 function participantState(p) {
@@ -163,7 +164,7 @@ function adminSnapshot() {
     detail: [...game.participants.values()]
       .filter((p) => p.answer != null)
       .sort((a, b) => a.number - b.number)
-      .map((p) => ({ number: p.number, answer: p.answer, predRandom: p.predRandom, predDummy: p.predDummy }))
+      .map((p) => ({ number: p.number, answer: p.answer, predRandom: p.predRandom, predDummy: p.predDummy, predAlways: p.predAlways }))
   };
 }
 
@@ -309,6 +310,7 @@ io.on('connection', (socket) => {
       p.answer = null;
       p.predRandom = null;
       p.predDummy = null;
+      p.predAlways = null;
     }
     io.to('players').emit('reset', { round: game.round });
     pushAdmin(true);
