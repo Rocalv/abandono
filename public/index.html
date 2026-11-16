@@ -49,7 +49,7 @@
           <p id="me-random-ok" class="me-model__ok"></p>
         </div>
         <div class="me-model">
-          <p class="me-model__name">Modelo que siempre dice “no”</p>
+          <p id="me-dummy-name" class="me-model__name">Modelo que siempre dice “no abandona”</p>
           <p id="me-dummy" class="me-model__pred"></p>
           <p id="me-dummy-ok" class="me-model__ok"></p>
         </div>
@@ -92,7 +92,7 @@
         <p class="live__hint">Cuando cerremos la votación, dos modelos van a “predecir” quién abandonó, sin mirar ningún dato:</p>
         <ul class="live__models">
           <li><b>Al azar:</b> dice “abandona” al <span data-rate></span> de la sala, la tasa de abandono de OULAD.</li>
-          <li><b>Siempre “no”:</b> dice que nadie abandona.</li>
+          <li><b>Siempre lo mismo:</b> toma la opción que más se votó y la aplica a todos los casos.</li>
         </ul>
         <button id="btn-close" type="button" class="btn btn--orange btn--xl">CERRAR Y PREDECIR</button>
       </div>
@@ -103,7 +103,7 @@
       <div class="totals">
         <div class="total total--yes"><span id="tot-yes" class="total__n"></span><span class="total__label">abandonaron</span></div>
         <div class="total total--no"><span id="tot-no" class="total__n"></span><span class="total__label">no abandonaron</span></div>
-        <div class="total total--rate"><span id="tot-rate" class="total__n"></span><span class="total__label">tasa de la sala<br>(OULAD: <span data-rate></span>)</span></div>
+        <div class="total total--rate"><span id="tot-rate" class="total__n"></span><span class="total__label">tasa de la sala</span></div>
       </div>
 
       <div class="models">
@@ -114,20 +114,16 @@
           </header>
           <div id="cm-random" class="cm"></div>
           <dl id="mt-random" class="metrics"></dl>
-          <p id="sim-random" class="sim"></p>
         </article>
         <article class="model">
           <header class="model__head">
-            <h2>Siempre “no abandona”</h2>
-            <p>El Dummy: no mira nada y dice que nadie abandona</p>
+            <h2 id="dummy-title">Siempre “no abandona”</h2>
+            <p>Le dice a todos lo que respondió la mayoría de la sala</p>
           </header>
           <div id="cm-dummy" class="cm"></div>
           <dl id="mt-dummy" class="metrics"></dl>
-          <p class="sim">Siempre da lo mismo: no detecta a nadie.</p>
         </article>
       </div>
-
-      <p class="takeaway">Sin datos, ningún modelo supera al azar. El nuestro, con 10 semanas de datos, detecta 7 de cada 10.</p>
 
       <div class="admin-actions">
         <button id="btn-reroll" type="button" class="btn btn--ghost">Volver a tirar el azar</button>
@@ -136,7 +132,7 @@
       </div>
 
       <table id="detail" class="detail" hidden>
-        <thead><tr><th>#</th><th>Respondió</th><th>Azar predijo</th><th>Siempre “no” predijo</th></tr></thead>
+        <thead><tr><th>#</th><th>Respondió</th><th>Azar predijo</th><th id="dummy-th">Siempre “no abandona” predijo</th></tr></thead>
         <tbody id="detail-body"></tbody>
       </table>
     </div>
